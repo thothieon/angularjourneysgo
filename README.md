@@ -2,6 +2,11 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.6.
 
+注意：專案的根元件已變更為 `AppComponent`（位於 `src/app/app.component.ts`）。
+先前的 `src/app/app.ts` 檔案已被移除。應用仍透過 `src/main.ts` 中的 `bootstrapApplication(...)` 啟動。
+如需還原或查閱歷史，請參考版本控制紀錄（git log）。
+
+
 ## Development server
 
 To start a local development server, run:
