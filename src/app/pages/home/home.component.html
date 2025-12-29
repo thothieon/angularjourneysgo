@@ -1,0 +1,244 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Home</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="reloadCards()">
+        <ion-icon name="refresh"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <button matButton [matMenuTriggerFor]="aboveMenu">Above</button>
+
+  <mat-menu #aboveMenu="matMenu" yPosition="above">
+    <button mat-menu-item>Item 1</button>
+    <button mat-menu-item>Item 2</button>
+  </mat-menu>
+
+  <button matButton [matMenuTriggerFor]="belowMenu">Below</button>
+  <mat-menu #belowMenu="matMenu" yPosition="below">
+    <button mat-menu-item>Item 1</button>
+    <button mat-menu-item>Item 2</button>
+  </mat-menu>
+
+  <button matButton [matMenuTriggerFor]="beforeMenu">Before</button>
+  <mat-menu #beforeMenu="matMenu" xPosition="before">
+    <button mat-menu-item>Item 1</button>
+    <button mat-menu-item>Item 2</button>
+  </mat-menu>
+
+
+  <button matButton [matMenuTriggerFor]="afterMenu">After</button>
+  <mat-menu #afterMenu="matMenu" xPosition="after">
+    <button mat-menu-item>Item 1</button>
+    <button mat-menu-item>Item 2</button>
+  </mat-menu>
+
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!--  -->
+  <ion-breadcrumbs>
+    <ion-breadcrumb href="#home">Home</ion-breadcrumb>
+    <ion-breadcrumb href="#electronics">Electronics</ion-breadcrumb>
+    <ion-breadcrumb href="#cameras">Cameras</ion-breadcrumb>
+    <ion-breadcrumb href="#film">Film</ion-breadcrumb>
+  </ion-breadcrumbs>
+
+  <!-- 測試資訊顯示 -->
+  <ion-card color="primary">
+    <ion-card-header>
+      <ion-card-title>API 連線狀態</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      @if (loading()) {
+      <ion-spinner></ion-spinner>
+      <p>載入中...</p>
+      }
+      @if (error()) {
+      <ion-text color="danger">
+        <p>❌ 錯誤: {{ error() }}</p>
+      </ion-text>
+      }
+      @if (!loading() && !error()) {
+      <ion-text color="success">
+        <p>✅ 已載入 {{ cards().length }} 筆資料</p>
+      </ion-text>
+      }
+      <ion-button (click)="testConnection()" size="small">測試連線</ion-button>
+      <ion-button (click)="reloadCards()" size="small">重新載入</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- 第一區塊 -->
+  <ion-card-title class="section-title">
+    <ion-text color="primary">
+      <h2>日本線行程</h2>
+    </ion-text>
+  </ion-card-title>
+
+  <!-- 第一區塊卡片顯示 -->
+  <ion-grid [fixed]="true">
+    <ion-row class="card-row">
+      @for (card of cards(); track card.id) {
+      <ion-col size="12" size-md="6" size-lg="4">
+        <ion-card>
+          <img [alt]="card.title" [src]="card.image" />
+          <ion-card-header>
+            <ion-card-title>{{ card.title }}</ion-card-title>
+            <ion-card-subtitle>{{ card.subtitle }}</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            {{ card.content }}
+            <br><small>ID: {{ card.id }}</small>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+      @empty {
+      <ion-col>
+        <ion-card>
+          <ion-card-content>
+            <p>目前沒有日本線行程資料</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+    </ion-row>
+  </ion-grid>
+
+  <!-- 第二區塊 -->
+  <ion-card-title class="section-title">
+    <ion-text color="secondary">
+      <h2>美國線行程</h2>
+    </ion-text>
+  </ion-card-title>
+
+  <!-- 第二區塊卡片顯示 -->
+  <ion-grid [fixed]="true">
+    <ion-row class="card-row">
+      @for (block02card of block02cards(); track block02card.id) {
+      <ion-col size="12" size-md="6" size-lg="4">
+        <ion-card>
+          <img [alt]="block02card.title" [src]="block02card.image" />
+          <ion-card-header>
+            <ion-card-title>{{ block02card.title }}</ion-card-title>
+            <ion-card-subtitle>{{ block02card.subtitle }}</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            {{ block02card.content }}
+            <br><small>分類: 美國 | ID: {{ block02card.id }}</small>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+      @empty {
+      <ion-col>
+        <ion-card>
+          <ion-card-content>
+            <p>目前沒有美國線行程資料</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+    </ion-row>
+  </ion-grid>
+
+  <!-- 第三區塊 -->
+  <ion-card-title class="section-title">
+    <ion-text color="secondary">
+      <h2>台灣線行程</h2>
+    </ion-text>
+  </ion-card-title>
+
+  <!-- 第三區塊卡片顯示 -->
+  <ion-grid [fixed]="true">
+    <ion-row class="card-row">
+      @for (block03card of block03cards(); track block03card.id) {
+      <ion-col size="12" size-md="6" size-lg="4">
+        <ion-card>
+          <img [alt]="block03card.title" [src]="block03card.image" />
+          <ion-card-header>
+            <ion-card-title>{{ block03card.title }}</ion-card-title>
+            <ion-card-subtitle>{{ block03card.subtitle }}</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            {{ block03card.content }}
+            <br><small>分類: 台灣 | ID: {{ block03card.id }}</small>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+      @empty {
+      <ion-col>
+        <ion-card>
+          <ion-card-content>
+            <p>目前沒有台灣線行程資料</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+    </ion-row>
+  </ion-grid>
+
+  <!-- 第四區塊 -->
+  <ion-card-title class="section-title">
+    <ion-text color="secondary">
+      <h2>中國線行程</h2>
+    </ion-text>
+  </ion-card-title>
+
+  <!-- 第四區塊卡片顯示 -->
+  <ion-grid [fixed]="true">
+    <ion-row class="card-row">
+      @for (block04card of block04cards(); track block04card.id) {
+      <ion-col size="12" size-md="6" size-lg="4">
+        <ion-card>
+          <img [alt]="block04card.title" [src]="block04card.image" />
+          <ion-card-header>
+            <ion-card-title>{{ block04card.title }}</ion-card-title>
+            <ion-card-subtitle>{{ block04card.subtitle }}</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            {{ block04card.content }}
+            <br><small>分類: 中國 | ID: {{ block04card.id }}</small>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+      @empty {
+      <ion-col>
+        <ion-card>
+          <ion-card-content>
+            <p>目前沒有中國線行程資料</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+    </ion-row>
+  </ion-grid>
+
+
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-grid>
+      <ion-row>
+        <ion-col size="4">
+          <ion-text>© 2025 AngularJourneysGo</ion-text>
+        </ion-col>
+        <ion-col size="4" class="ion-text-center">
+          <ion-text>關於我們 | 聯絡方式</ion-text>
+        </ion-col>
+        <ion-col size="4" class="ion-text-end">
+          <ion-text>隱私權政策</ion-text>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-toolbar>
+</ion-footer>

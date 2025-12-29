@@ -1,0 +1,10 @@
+{
+  "/api": {
+    "target": "https://idiving.journeygo.com.tw",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api": "/journeygo/cardsmysql"
+    }
+  }
+}
