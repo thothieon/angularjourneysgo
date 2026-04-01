@@ -1,10 +1,7 @@
 {
-  "/api": {
-    "target": "https://idiving.journeygo.com.tw",
-    "secure": true,
-    "changeOrigin": true,
-    "pathRewrite": {
-      "^/api": "/journeygo/cardsmysql"
-    }
+  "/journeygo": {
+    "target": "http://192.168.5.12:5001",
+    "secure": false,
+    "changeOrigin": true
   }
 }

@@ -1,0 +1,618 @@
+// eztrip 配色變數
+$primary:      #3b82f6;
+$primary-bg:   #eff6ff;
+$primary-dark: #1d4ed8;
+$border:       #e5e7eb;
+$text:         #374151;
+$text-light:   #6b7280;
+$success-bg:   #d1fae5;
+$success-fg:   #059669;
+$warn-bg:      #ffedd5;
+$warn-fg:      #c2410c;
+$danger-bg:    #fee2e2;
+$danger-fg:    #dc2626;
+$bg-gray:      #f9fafb;
+
+// ── ion-content 背景 ──────────────────────────────────────
+.ez-content {
+  --background: #ffffff;
+}
+
+// ── 載入 / 錯誤 ───────────────────────────────────────────
+.ez-loading,
+.ez-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 14px;
+  color: $text-light;
+  font-size: 14px;
+}
+
+// ── 外層容器 ──────────────────────────────────────────────
+.ez-wrap {
+  max-width: 680px;
+  margin: 0 auto;
+  background: #fff;
+}
+
+// ── Hero 主圖 ─────────────────────────────────────────────
+.ez-hero {
+  width: 100%;
+  overflow: hidden;
+  background: $bg-gray;
+
+  .ez-hero-img {
+    width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+// ── 標題區 ────────────────────────────────────────────────
+.ez-title-block {
+  padding: 16px 16px 0;
+}
+
+.ez-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.ez-tag {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: $primary;
+  color: #fff;
+  font-weight: 600;
+
+  &.ez-tag-outline {
+    background: transparent;
+    color: $primary;
+    border: 1px solid $primary;
+  }
+}
+
+.ez-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 6px;
+  line-height: 1.4;
+}
+
+.ez-subtitle {
+  font-size: 14px;
+  color: $text-light;
+  margin: 0;
+}
+
+// ── 分隔線 ────────────────────────────────────────────────
+.ez-divider {
+  height: 1px;
+  background: $border;
+  margin: 16px 0;
+}
+
+// ── Section 通用 ──────────────────────────────────────────
+.ez-section {
+  padding: 0 16px;
+}
+
+.ez-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 14px;
+}
+
+// ── 列表/日曆 切換膠囊 ────────────────────────────────────
+.ez-toggle-capsule {
+  display: inline-flex;
+  border: 1px solid $border;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.ez-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  background: #fff;
+  color: $text-light;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  ion-icon { font-size: 15px; }
+
+  &.active {
+    background: $primary;
+    color: #fff;
+  }
+
+  & + & {
+    border-left: 1px solid $border;
+  }
+}
+
+// ── 日期列表 ──────────────────────────────────────────────
+.ez-date-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ez-date-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  background: #fff;
+
+  &:hover:not(.full) {
+    background: $primary-bg;
+    border-color: $primary;
+  }
+
+  &.selected {
+    border-color: $primary;
+    background: $primary-bg;
+    box-shadow: 0 0 0 1px $primary;
+  }
+
+  &.full {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.ez-date-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ez-date-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: $text;
+}
+
+.ez-date-week {
+  font-size: 13px;
+  color: $text-light;
+}
+
+.ez-status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+
+  &.status-available   { background: $success-bg; color: $success-fg; }
+  &.status-almost_full { background: $warn-bg;    color: $warn-fg;    }
+  &.status-full        { background: $danger-bg;  color: $danger-fg;  }
+}
+
+.ez-date-right {
+  .ez-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: $primary;
+  }
+}
+
+// ── 日曆 ──────────────────────────────────────────────────
+.ez-calendar {
+  border: 1px solid $border;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ez-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: $bg-gray;
+  border-bottom: 1px solid $border;
+}
+
+.ez-cal-nav {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: $text-light;
+  cursor: pointer;
+  padding: 0 6px;
+  line-height: 1;
+
+  &:hover { color: $primary; }
+}
+
+.ez-cal-month {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text;
+}
+
+.ez-cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: $bg-gray;
+  border-bottom: 1px solid $border;
+
+  .ez-cal-wd {
+    text-align: center;
+    font-size: 12px;
+    color: $text-light;
+    padding: 6px 0;
+  }
+}
+
+.ez-cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.ez-cal-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  border-right: 1px solid $border;
+  border-bottom: 1px solid $border;
+  cursor: default;
+  gap: 2px;
+
+  &.other-month .ez-cal-num { color: #d1d5db; }
+
+  &.has-tour {
+    background: $primary-bg;
+    cursor: pointer;
+    &:hover { background: #ccfbf1; }
+  }
+
+  &.selected {
+    background: $primary;
+    .ez-cal-num { color: #fff; font-weight: 700; }
+  }
+
+  &.full { opacity: 0.5; cursor: not-allowed; }
+}
+
+.ez-cal-num {
+  font-size: 14px;
+  color: $text;
+}
+
+.ez-cal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+
+  &.dot-available   { background: $success-fg; }
+  &.dot-almost_full { background: $warn-fg;    }
+  &.dot-full        { background: $danger-fg;  }
+}
+
+// ── 人數控制 ──────────────────────────────────────────────
+.ez-qty-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ez-qty-label {
+  width: 34px;
+  font-size: 14px;
+  color: $text;
+  flex-shrink: 0;
+}
+
+.ez-qty-ctrl {
+  display: flex;
+  align-items: center;
+}
+
+.ez-qty-btn {
+  width: 32px;
+  height: 32px;
+  background: #e5e7eb;
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: $text;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:active { background: #d1d5db; }
+}
+
+.ez-qty-num {
+  width: 36px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: $text;
+}
+
+.ez-qty-unit {
+  font-size: 13px;
+  color: $text-light;
+  margin-left: auto;
+}
+
+// ── 價格摘要框 ────────────────────────────────────────────
+.ez-price-box {
+  background: $bg-gray;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ez-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: $text;
+
+  &.small { font-size: 13px; color: $text-light; }
+}
+
+.ez-price-label {
+  color: $text-light;
+}
+
+.ez-price-total {
+  font-size: 20px;
+  font-weight: 700;
+  color: $primary;
+}
+
+// ── 按鈕 ──────────────────────────────────────────────────
+.ez-btn-primary {
+  width: 100%;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 13px 0;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(13,148,136,0.3);
+  margin-bottom: 10px;
+  transition: background 0.15s;
+
+  &:hover { background: $primary-dark; }
+  &:active { background: $primary-dark; }
+}
+
+.ez-btn-line {
+  width: 100%;
+  background: #fff;
+  color: $primary;
+  border: 1.5px solid $primary;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s;
+
+  ion-icon { font-size: 17px; }
+
+  &:hover { background: $primary-bg; }
+}
+
+.ez-btn-outline {
+  background: #fff;
+  color: $text;
+  border: 1px solid $border;
+  border-radius: 8px;
+  font-size: 14px;
+  padding: 9px 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: border-color 0.15s;
+
+  ion-icon { font-size: 16px; }
+
+  &:hover { border-color: $primary; color: $primary; }
+}
+
+// ── 行程簡介 ──────────────────────────────────────────────
+.ez-intro {
+  font-size: 14px;
+  line-height: 1.9;
+  color: $text-light;
+  margin: 0;
+}
+
+// ── 逐日行程（垂直時間軸）────────────────────────────────
+.ez-itinerary {
+  display: flex;
+  flex-direction: column;
+}
+
+.ez-itin-item {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0;
+}
+
+// 左側時間軸
+.ez-itin-line-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 28px;
+  flex-shrink: 0;
+  padding-top: 16px;
+}
+
+.ez-itin-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: $primary;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px $primary;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.ez-itin-line {
+  width: 2px;
+  flex: 1;
+  background: $border;
+  margin-top: 4px;
+}
+
+.ez-itin-item:last-child .ez-itin-line {
+  display: none;
+}
+
+// 右側內容
+.ez-itin-body {
+  flex: 1;
+  padding: 10px 0 20px 14px;
+}
+
+.ez-itin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  gap: 8px;
+  user-select: none;
+}
+
+.ez-itin-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ez-day-badge {
+  background: $primary;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.ez-day-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ez-itin-toggle {
+  font-size: 17px;
+  color: $text-light;
+  flex-shrink: 0;
+}
+
+.ez-itin-detail {
+  margin-top: 10px;
+}
+
+.ez-itin-img {
+  width: 100%;
+  border-radius: 8px;
+  max-height: 200px;
+  object-fit: cover;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.ez-itin-desc {
+  font-size: 13px;
+  line-height: 1.8;
+  color: $text-light;
+  margin: 0 0 10px;
+}
+
+.ez-itin-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ez-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: $text-light;
+
+  ion-icon {
+    color: $success-fg;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+}
+
+// 查看詳細說明 按鈕
+.ez-btn-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  background: none;
+  border: none;
+  color: $primary;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+
+  ion-icon { font-size: 14px; }
+
+  &:hover { text-decoration: underline; }
+}
+
+// ── 底部 ──────────────────────────────────────────────────
+.ez-bottom {
+  padding-bottom: 30px;
+}

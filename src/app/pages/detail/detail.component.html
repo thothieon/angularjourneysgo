@@ -1,0 +1,272 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>行程詳情</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ez-content">
+
+  <!-- 載入中 -->
+  @if (loading()) {
+    <div class="ez-loading">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p>載入中...</p>
+    </div>
+  }
+
+  <!-- 錯誤 -->
+  @if (error() && !loading()) {
+    <div class="ez-error">
+      <p>{{ error() }}</p>
+      <button class="ez-btn-outline" (click)="goBack()">返回</button>
+    </div>
+  }
+
+  <!-- 主內容 -->
+  @if (tour() && !loading() && !error()) {
+    <div class="ez-wrap">
+
+      <!-- Hero 主圖 -->
+      <div class="ez-hero">
+        <img [src]="tour()!.image" [alt]="tour()!.title" class="ez-hero-img" />
+      </div>
+
+      <!-- 標題區 -->
+      <div class="ez-title-block">
+        <div class="ez-tags">
+          <span class="ez-tag">{{ tour()!.category }}</span>
+          @if (tour()!.duration) {
+            <span class="ez-tag ez-tag-outline">{{ tour()!.duration }}</span>
+          }
+          @for (h of tour()!.highlights.slice(0,3); track h) {
+            <span class="ez-tag ez-tag-outline">{{ h }}</span>
+          }
+        </div>
+        <h1 class="ez-title">{{ tour()!.title }}</h1>
+        <p class="ez-subtitle">{{ tour()!.subtitle }}</p>
+      </div>
+
+      <div class="ez-divider"></div>
+
+      <!-- 出發日期選擇 -->
+      <div class="ez-section">
+        <h2 class="ez-section-title">選擇出發日期</h2>
+
+        <!-- 列表/日曆 切換膠囊 -->
+        <div class="ez-toggle-capsule">
+          <button class="ez-toggle-btn" [class.active]="viewMode() === 'list'" (click)="setViewMode('list')">
+            <ion-icon name="list-outline"></ion-icon> 列表
+          </button>
+          <button class="ez-toggle-btn" [class.active]="viewMode() === 'calendar'" (click)="setViewMode('calendar')">
+            <ion-icon name="calendar-outline"></ion-icon> 日曆
+          </button>
+        </div>
+
+        <!-- 列表模式 -->
+        @if (viewMode() === 'list') {
+          <div class="ez-date-list">
+            @for (d of tour()!.dates; track d.id) {
+              <div
+                class="ez-date-item"
+                [class.selected]="selectedDate()?.id === d.id"
+                [class.full]="d.status === 'full'"
+                (click)="selectDate(d)"
+              >
+                <div class="ez-date-left">
+                  <span class="ez-date-text">{{ formatDate(d.departure_date) }}</span>
+                  <span class="ez-date-week">{{ formatWeekday(d.departure_date) }}</span>
+                  <span class="ez-status-badge" [class]="'status-' + d.status">
+                    {{ statusLabel(d.status) }}
+                  </span>
+                </div>
+                <div class="ez-date-right">
+                  <span class="ez-price">NT$ {{ d.price | number }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- 日曆模式（簡易月曆） -->
+        @if (viewMode() === 'calendar') {
+          <div class="ez-calendar">
+            <div class="ez-cal-header">
+              <button class="ez-cal-nav" (click)="prevMonth()">‹</button>
+              <span class="ez-cal-month">{{ calendarTitle() }}</span>
+              <button class="ez-cal-nav" (click)="nextMonth()">›</button>
+            </div>
+            <div class="ez-cal-weekdays">
+              @for (w of ['日','一','二','三','四','五','六']; track w) {
+                <div class="ez-cal-wd">{{ w }}</div>
+              }
+            </div>
+            <div class="ez-cal-days">
+              @for (cell of calendarCells(); track cell.key) {
+                <div
+                  class="ez-cal-day"
+                  [class.other-month]="!cell.inMonth"
+                  [class.has-tour]="cell.tourDate"
+                  [class.selected]="selectedDate()?.id === cell.tourDate?.id"
+                  [class.full]="cell.tourDate?.status === 'full'"
+                  (click)="cell.tourDate && selectDate(cell.tourDate)"
+                >
+                  <span class="ez-cal-num">{{ cell.day }}</span>
+                  @if (cell.tourDate) {
+                    <span class="ez-cal-dot" [class]="'dot-' + cell.tourDate.status"></span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="ez-divider"></div>
+
+      <!-- 人數 + 價格 -->
+      @if (selectedDate()) {
+        <div class="ez-section">
+          <h2 class="ez-section-title">報名人數</h2>
+
+          <div class="ez-qty-row">
+            <span class="ez-qty-label">大人</span>
+            <div class="ez-qty-ctrl">
+              <button class="ez-qty-btn" (click)="adjustCount('adult', -1)">−</button>
+              <span class="ez-qty-num">{{ adultCount() }}</span>
+              <button class="ez-qty-btn" (click)="adjustCount('adult', 1)">+</button>
+            </div>
+            <span class="ez-qty-unit">NT$ {{ selectedDate()!.price | number }} / 人</span>
+          </div>
+
+          <div class="ez-qty-row">
+            <span class="ez-qty-label">小孩</span>
+            <div class="ez-qty-ctrl">
+              <button class="ez-qty-btn" (click)="adjustCount('child', -1)">−</button>
+              <span class="ez-qty-num">{{ childCount() }}</span>
+              <button class="ez-qty-btn" (click)="adjustCount('child', 1)">+</button>
+            </div>
+            <span class="ez-qty-unit">NT$ {{ (selectedDate()!.price * 0.8) | number:'1.0-0' }} / 人</span>
+          </div>
+
+          <div class="ez-price-box">
+            <div class="ez-price-row">
+              <span class="ez-price-label">出發日期</span>
+              <span class="ez-price-val">{{ formatDateFull(selectedDate()!.departure_date) }}</span>
+            </div>
+            <div class="ez-price-row">
+              <span class="ez-price-label">預估總價</span>
+              <span class="ez-price-total">NT$ {{ totalPrice() | number }}</span>
+            </div>
+            <div class="ez-price-row small">
+              <span class="ez-price-label">預估訂金</span>
+              <span>NT$ {{ totalDeposit() | number }}</span>
+            </div>
+          </div>
+
+          <button class="ez-btn-primary">立即報名</button>
+          <button class="ez-btn-line">
+            <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+            LINE 線上諮詢
+          </button>
+        </div>
+
+        <div class="ez-divider"></div>
+      }
+
+      <!-- 行程介紹 -->
+      <div class="ez-section">
+        <h2 class="ez-section-title">行程簡介</h2>
+        <p class="ez-intro">{{ tour()!.content }}</p>
+      </div>
+
+      <div class="ez-divider"></div>
+
+      <!-- 逐日行程（eztrip 風格垂直時間軸） -->
+      @if (tour()!.itinerary.length) {
+        <div class="ez-section">
+          <h2 class="ez-section-title">行程內容</h2>
+
+          <div class="ez-itinerary">
+            @for (day of tour()!.itinerary; track day.id) {
+              <div class="ez-itin-item">
+                <!-- 左側時間軸 -->
+                <div class="ez-itin-line-col">
+                  <div class="ez-itin-dot"></div>
+                  <div class="ez-itin-line"></div>
+                </div>
+
+                <!-- 右側內容 -->
+                <div class="ez-itin-body">
+                  <div class="ez-itin-header" (click)="toggleDay(day.day_number)">
+                    <div class="ez-itin-header-left">
+                      <span class="ez-day-badge">D{{ day.day_number }}</span>
+                      <span class="ez-day-title">{{ day.title }}</span>
+                    </div>
+                    <ion-icon
+                      [name]="isDayExpanded(day.day_number) ? 'chevron-up-outline' : 'chevron-down-outline'"
+                      class="ez-itin-toggle"
+                    ></ion-icon>
+                  </div>
+
+                  @if (isDayExpanded(day.day_number)) {
+                    <div class="ez-itin-detail">
+                      @if (day.image) {
+                        <img [src]="day.image" [alt]="day.title" class="ez-itin-img" />
+                      }
+                      <p class="ez-itin-desc">{{ day.description }}</p>
+                      <div class="ez-itin-meta">
+                        @if (day.meals.length) {
+                          <div class="ez-meta-row">
+                            <ion-icon name="restaurant-outline"></ion-icon>
+                            <span>餐食：{{ day.meals.join('、') }}</span>
+                          </div>
+                        }
+                        @if (day.hotel) {
+                          <div class="ez-meta-row">
+                            <ion-icon name="bed-outline"></ion-icon>
+                            <span>住宿：{{ day.hotel }}</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  @if (!isDayExpanded(day.day_number)) {
+                    <button class="ez-btn-toggle" (click)="toggleDay(day.day_number)">
+                      查看詳細說明 <ion-icon name="chevron-down-outline"></ion-icon>
+                    </button>
+                  }
+                  @if (isDayExpanded(day.day_number)) {
+                    <button class="ez-btn-toggle" (click)="toggleDay(day.day_number)">
+                      收起說明 <ion-icon name="chevron-up-outline"></ion-icon>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- 底部返回 -->
+      <div class="ez-section ez-bottom">
+        <button class="ez-btn-outline" (click)="goBack()">
+          <ion-icon name="arrow-back-outline"></ion-icon> 返回列表
+        </button>
+      </div>
+
+    </div><!-- /ez-wrap -->
+  }
+
+  <!-- 無資料 -->
+  @if (!tour() && !loading() && !error()) {
+    <div class="ez-loading">
+      <p>找不到行程資訊</p>
+      <button class="ez-btn-outline" (click)="goBack()">返回</button>
+    </div>
+  }
+
+</ion-content>

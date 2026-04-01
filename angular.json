@@ -88,8 +88,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "10kb"
+                  "maximumWarning": "16kb",
+                  "maximumError": "24kb"
                 }
               ],
               "outputHashing": "all"
@@ -109,7 +109,8 @@
               "buildTarget": "angularjourneysgo:build:production"
             },
             "development": {
-              "buildTarget": "angularjourneysgo:build:development"
+              "buildTarget": "angularjourneysgo:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

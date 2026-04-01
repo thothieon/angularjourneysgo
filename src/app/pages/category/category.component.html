@@ -1,0 +1,258 @@
+<!-- ── Navbar ─────────────────────────────────────────────── -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a class="nav-logo" routerLink="/">
+      <span class="logo-main">JourneyGo</span>
+      <span class="logo-sub">旅程趣</span>
+    </a>
+    <ul class="nav-links">
+      <li><a routerLink="/">首頁</a></li>
+      <li><a (click)="setCategory('日本')">日本</a></li>
+      <li><a (click)="setCategory('美國')">美國</a></li>
+      <li><a (click)="setCategory('台灣')">台灣</a></li>
+      <li><a (click)="setCategory('歐洲')">歐洲</a></li>
+      <li><a (click)="setCategory('馬來西亞')">馬來西亞</a></li>
+      <li><a (click)="setCategory('沙巴')">沙巴</a></li>
+      <li><a (click)="setCategory('汶萊')">汶萊</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ── 手機版篩選抽屜 Overlay ──────────────────────────────── -->
+@if (drawerOpen()) {
+  <div class="drawer-overlay" (click)="closeDrawer()"></div>
+}
+
+<div class="drawer" [class.open]="drawerOpen()">
+  <div class="drawer-header">
+    <span>進階篩選</span>
+    <button class="drawer-close" (click)="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body">
+    <ng-container *ngTemplateOutlet="filterForm"></ng-container>
+  </div>
+</div>
+
+<!-- ── 主頁面 ─────────────────────────────────────────────── -->
+<div class="page-wrap">
+
+  <!-- 麵包屑 -->
+  <div class="breadcrumb">
+    <a routerLink="/">首頁</a>
+    <span class="sep">›</span>
+    <span>{{ filterCategory() || '所有行程' }}</span>
+  </div>
+
+  <div class="page-body">
+
+    <!-- 左側篩選欄（桌面版） -->
+    <aside class="sidebar">
+      <div class="sidebar-title">進階篩選</div>
+      <ng-container *ngTemplateOutlet="filterForm"></ng-container>
+    </aside>
+
+    <!-- 右側內容 -->
+    <main class="main-content">
+
+      <!-- 標題 + 排序列 -->
+      <div class="results-bar">
+        <div class="results-left">
+          <h1 class="page-title">{{ filterCategory() || '所有行程' }}</h1>
+          @if (!loading()) {
+            <span class="result-count">共 {{ total() }} 個相關行程</span>
+          }
+        </div>
+        <div class="results-right">
+          <!-- 手機篩選按鈕 -->
+          <button class="btn-filter-mobile" (click)="toggleDrawer()">
+            <span class="filter-icon">⊞</span> 篩選
+          </button>
+          <!-- 排序 -->
+          <select class="sort-select" [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event); onSortChange()">
+            <option value="latest">最新上架</option>
+            <option value="price_asc">價格：低到高</option>
+            <option value="price_desc">價格：高到低</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 載入中 -->
+      @if (loading()) {
+        <div class="state-wrap">
+          <div class="spinner"></div>
+          <p>載入中...</p>
+        </div>
+      }
+
+      <!-- 錯誤 -->
+      @if (error() && !loading()) {
+        <div class="state-wrap">
+          <p class="error-text">{{ error() }}</p>
+          <button class="btn-primary" (click)="loadTours()">重新載入</button>
+        </div>
+      }
+
+      <!-- 無結果 -->
+      @if (!loading() && !error() && cards().length === 0) {
+        <div class="state-wrap">
+          <div class="empty-icon">🔍</div>
+          <p>找不到符合條件的行程</p>
+          <button class="btn-outline" (click)="clearFilter()">清除篩選條件</button>
+        </div>
+      }
+
+      <!-- 卡片 Grid -->
+      @if (!loading() && !error() && cards().length > 0) {
+        <div class="cards-grid">
+          @for (card of cards(); track card.id) {
+            <a class="tour-card" [routerLink]="['/detail', card.id]">
+
+              <!-- 圖片 -->
+              <div class="card-img-wrap">
+                <img [src]="card.image" [alt]="card.title" class="card-img" />
+                <span class="card-dest-badge">{{ card.category }}</span>
+              </div>
+
+              <!-- 內容 -->
+              <div class="card-body">
+
+                <!-- 標籤群 -->
+                @if (card.tags.length) {
+                  <div class="card-tags">
+                    @for (tag of card.tags.slice(0, 4); track tag) {
+                      <span class="tag">{{ tag }}</span>
+                    }
+                  </div>
+                }
+
+                <!-- 標題 -->
+                <h3 class="card-title">{{ card.title }}</h3>
+
+                <!-- 近期出發日期 -->
+                @if (card.next_dates.length) {
+                  <div class="card-dates">
+                    @for (d of card.next_dates; track d.departure_date) {
+                      <span class="date-chip" [class]="'chip-' + d.status">
+                        {{ formatDate(d.departure_date) }}
+                        @if (d.status === 'full')        { <em>(滿)</em> }
+                        @if (d.status === 'almost_full') { <em>(即)</em> }
+                      </span>
+                    }
+                  </div>
+                }
+
+                <!-- 底部：天數 + 價格 -->
+                <div class="card-footer">
+                  @if (card.duration) {
+                    <span class="card-duration">{{ card.duration }}</span>
+                  }
+                  @if (card.min_price) {
+                    <span class="card-price">NT$ {{ card.min_price | number }} 起</span>
+                  }
+                </div>
+
+              </div>
+            </a>
+          }
+        </div>
+
+        <!-- 分頁 -->
+        @if (totalPages() > 1) {
+          <div class="pagination">
+            <button class="page-btn" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">‹</button>
+            @for (p of pages(); track p) {
+              <button class="page-btn" [class.active]="p === currentPage()" (click)="goToPage(p)">{{ p }}</button>
+            }
+            <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)">›</button>
+          </div>
+        }
+      }
+
+    </main>
+  </div><!-- /page-body -->
+</div><!-- /page-wrap -->
+
+<!-- ── 篩選表單模板 ────────────────────────────────────────── -->
+<ng-template #filterForm>
+  <div class="filter-form">
+
+    <!-- 目的地 -->
+    <div class="filter-group">
+      <div class="filter-label">旅遊目的地</div>
+      <div class="dest-btns">
+        <button class="dest-btn" [class.active]="filterCategory() === ''"
+                (click)="filterCategory.set(''); applyFilter()">全部地區</button>
+        @for (d of destinations; track d) {
+          <button class="dest-btn" [class.active]="filterCategory() === d"
+                  (click)="filterCategory.set(d); applyFilter()">{{ d }}</button>
+        }
+      </div>
+    </div>
+
+    <!-- 出發區間 -->
+    <div class="filter-group">
+      <div class="filter-label">出發區間</div>
+      <div class="date-range">
+        <input type="date" class="filter-input" [ngModel]="filterDateStart()"
+               (ngModelChange)="filterDateStart.set($event)" placeholder="開始日期" />
+        <span class="date-sep">–</span>
+        <input type="date" class="filter-input" [ngModel]="filterDateEnd()"
+               (ngModelChange)="filterDateEnd.set($event)" placeholder="結束日期" />
+      </div>
+    </div>
+
+    <!-- 天數 -->
+    <div class="filter-group">
+      <div class="filter-label">行程天數</div>
+      <div class="radio-group">
+        @for (opt of [{v:'',l:'不限天數'},{v:'1-5',l:'1–5 天'},{v:'6-9',l:'6–9 天'},{v:'10+',l:'10 天以上'}]; track opt.v) {
+          <label class="radio-label">
+            <input type="radio" [ngModel]="filterDays()" (ngModelChange)="filterDays.set($event)"
+                   [value]="opt.v" name="days" />
+            <span>{{ opt.l }}</span>
+          </label>
+        }
+      </div>
+    </div>
+
+    <!-- 關鍵字 -->
+    <div class="filter-group">
+      <div class="filter-label">關鍵字搜尋</div>
+      <input type="text" class="filter-input" [ngModel]="filterKeyword()"
+             (ngModelChange)="filterKeyword.set($event)"
+             placeholder="輸入行程名稱..." />
+    </div>
+
+    <!-- 預算 -->
+    <div class="filter-group">
+      <div class="filter-label">預算範圍 (NT$)</div>
+      <div class="budget-row">
+        <input type="number" class="filter-input budget-input"
+               [ngModel]="filterMinPrice()"
+               (ngModelChange)="filterMinPrice.set($event || null)"
+               placeholder="最低" min="0" />
+        <span class="budget-sep">–</span>
+        <input type="number" class="filter-input budget-input"
+               [ngModel]="filterMaxPrice()"
+               (ngModelChange)="filterMaxPrice.set($event || null)"
+               placeholder="最高" min="0" />
+      </div>
+    </div>
+
+    <!-- 只顯示有名額 -->
+    <div class="filter-group">
+      <label class="check-label">
+        <div class="custom-check" [class.checked]="filterHasQuota()"
+             (click)="filterHasQuota.set(!filterHasQuota())">
+          @if (filterHasQuota()) { <span class="check-mark">✓</span> }
+        </div>
+        <span>只顯示尚有名額</span>
+      </label>
+    </div>
+
+    <!-- 按鈕 -->
+    <button class="btn-primary full" (click)="applyFilter()">搜尋行程</button>
+    <button class="btn-clear" (click)="clearFilter()">清除所有條件</button>
+
+  </div>
+</ng-template>

@@ -1,313 +1,204 @@
-import { Component, OnInit, ViewChild, signal } from '@angular/core';
-
-import { DataService, Card } from '../../services/data';
-
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
-import { MatButtonModule } from '@angular/material/button';
-import { IonicModule } from '@ionic/angular';
-import { IonBreadcrumb, IonBreadcrumbs } from '@ionic/angular/standalone';
+import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
+import { DataService, CardListItem } from '../../services/data';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatMenuModule,
-    MatMenuTrigger,
-    MatButtonModule,
-    IonicModule
-  ],
+  imports: [RouterModule, CommonModule, FormsModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
 
-  cards = signal<Card[]>([]);
-  block02cards = signal<Card[]>([]);
-  block03cards = signal<Card[]>([]);
-  block04cards = signal<Card[]>([]);
-  loading = signal(false);
-  error = signal<string | null>(null);
-  
-  // 每個區塊最多顯示的卡片數量
-  private readonly MAX_CARDS_PER_BLOCK = 6;
+  // ── 行程資料 ─────────────────────────────────────────────
+  featuredCards   = signal<CardListItem[]>([]);
+  japanCards      = signal<CardListItem[]>([]);
+  usaCards        = signal<CardListItem[]>([]);
+  taiwanCards     = signal<CardListItem[]>([]);
+  malaysiaCards   = signal<CardListItem[]>([]);
+  bruneiCards     = signal<CardListItem[]>([]);
+  sabahCards      = signal<CardListItem[]>([]);
 
-  // 固定篩選分類
-  private readonly FIXED_CATEGORY_JAPAN = '日本';
-  private readonly FIXED_CATEGORY_USA = '美國';
-  private readonly FIXED_CATEGORY_TAIWAN = '台灣';
-  private readonly FIXED_CATEGORY_CHINA = '中國';
+  // ── 導覽列 ───────────────────────────────────────────────
+  navOpen      = false;
+  dropdownOpen = '';
 
-  constructor(private dataService: DataService) {
-    console.log('🏠 HomeComponent initialized');
-  }
+  // ── Hero Slider ──────────────────────────────────────────
+  currentSlide = 0;
+  private sliderTimer: any;
 
-  @ViewChild(MatMenuTrigger) trigger!: MatMenuTrigger;
+  slides = [
+    {
+      title: '尋找幸福的極光',
+      subtitle: '在世界的盡頭，遇見一生必看的極地奇蹟',
+      btn: '了解詳情',
+      tag: '極光',
+      img: 'assets/slides/slide-aurora.jpg',
+    },
+    {
+      title: '雪の大谷',
+      subtitle: '立山黑部・阿爾卑斯山脈之路',
+      btn: '查看行程',
+      tag: '日本',
+      img: 'assets/slides/slide-japan.jpg',
+    },
+    {
+      title: '北海道四季都好玩',
+      subtitle: '精選北海道頂級行程，感受四季不同風情',
+      btn: '立即探索',
+      tag: '北海道',
+      img: 'assets/slides/slide-hokkaido.jpg',
+    },
+  ];
 
-  hello() { console.log('Ionic + Angular 20!'); }
+  // ── 搜尋篩選 ─────────────────────────────────────────────
+  searchDest      = '';
+  searchDateStart = '';
+  searchDateEnd   = '';
+  searchDays      = '';
+  searchKeyword   = '';
 
-  someMethod() {
-    this.trigger.openMenu();
+  readonly destinations = ['中東','新馬','日本','歐洲','泰國','越南','韓國','美國','台灣','馬來西亞','汶萊','沙巴'];
+  readonly daysOptions  = [
+    { v: '',    l: '不限天數' },
+    { v: '1-5', l: '1–5 天'  },
+    { v: '6-9', l: '6–9 天'  },
+    { v: '10+', l: '10 天以上'},
+  ];
+
+  // ── 精選主題 ─────────────────────────────────────────────
+  themes = [
+    { label: '熱門行程',   tag: '熱門',   icon: '🔥' },
+    { label: '極光之旅',   tag: '極光',   icon: '🌌' },
+    { label: '日本精選',   tag: '日本',   icon: '🗾' },
+    { label: '歐洲漫遊',   tag: '歐洲',   icon: '🏰' },
+    { label: '蜜月旅行',   tag: '蜜月',   icon: '💑' },
+    { label: '親子行程',   tag: '親子',   icon: '👨‍👩‍👧' },
+    { label: '海島度假',   tag: '海島',   icon: '🏖️' },
+    { label: '溫泉之旅',   tag: '溫泉',   icon: '♨️' },
+    { label: '超值促銷',   tag: '促銷',   icon: '🏷️' },
+    { label: '早鳥優惠',   tag: '早鳥',   icon: '🐦' },
+  ];
+
+  // ── 旅遊小幫手 ────────────────────────────────────────────
+  tools = [
+    { icon: '🌤️', title: '天氣查詢',     subtitle: '即時掌握當地氣候', color: '#eff6ff' },
+    { icon: '💱', title: '匯率換算',     subtitle: '最新即時匯率',     color: '#f0fdf4' },
+    { icon: '🔌', title: '旅遊插頭查詢', subtitle: '各國電壓插座',     color: '#fefce8' },
+    { icon: '✈️', title: '客製包團',     subtitle: '企業/家族旅遊需求', color: '#fdf4ff' },
+  ];
+
+  // ── Tool Modal ────────────────────────────────────────────
+  modalOpen    = false;
+  modalTitle   = '';
+  modalContent = '';
+
+  private readonly MAX = 6;
+
+  constructor(
+    private dataService: DataService,
+    private router: Router,
+    private sanitizer: DomSanitizer,
+  ) {}
+
+  slideBg(img: string): SafeStyle {
+    return this.sanitizer.bypassSecurityTrustStyle(`url(${img})`);
   }
 
   ngOnInit() {
-    console.log('🔄 ngOnInit called');
-    this.testConnection();
-    this.loadblock01Cards();
-    this.loadblock02Cards();
-    this.loadblock03Cards();
-    this.loadblock04Cards();
+    this.loadCards();
+    this.startSlider();
   }
 
-  testConnection() {
-    console.log('🧪 Testing backend connection...');
-    this.dataService.testConnection().subscribe({
-      next: (data) => {
-        console.log('✅ Connection test successful:', data);
-      },
-      error: (error) => {
-        console.error('❌ Connection test failed:', error);
-        this.error.set('Backend connection failed: ' + error.message);
-      }
+  ngOnDestroy() { this.stopSlider(); }
+
+  // ── 資料載入 ─────────────────────────────────────────────
+  private loadCards() {
+    // 熱門行程（全部取前6筆）
+    this.dataService.getTours({ sort: 'latest', per_page: this.MAX }).subscribe({
+      next: r => this.featuredCards.set(r.items ?? []),
+      error: () => this.featuredCards.set([]),
+    });
+    this.dataService.getTours({ category: '日本', per_page: this.MAX }).subscribe({
+      next: r => this.japanCards.set(r.items ?? []),
+      error: () => this.japanCards.set([]),
+    });
+    this.dataService.getTours({ category: '美國', per_page: this.MAX }).subscribe({
+      next: r => this.usaCards.set(r.items ?? []),
+      error: () => this.usaCards.set([]),
+    });
+    this.dataService.getTours({ category: '台灣', per_page: this.MAX }).subscribe({
+      next: r => this.taiwanCards.set(r.items ?? []),
+      error: () => this.taiwanCards.set([]),
+    });
+    this.dataService.getTours({ category: '馬來西亞', per_page: this.MAX }).subscribe({
+      next: r => this.malaysiaCards.set(r.items ?? []),
+      error: () => this.malaysiaCards.set([]),
+    });
+    this.dataService.getTours({ category: '汶萊', per_page: this.MAX }).subscribe({
+      next: r => this.bruneiCards.set(r.items ?? []),
+      error: () => this.bruneiCards.set([]),
+    });
+    this.dataService.getTours({ category: '沙巴', per_page: this.MAX }).subscribe({
+      next: r => this.sabahCards.set(r.items ?? []),
+      error: () => this.sabahCards.set([]),
     });
   }
 
-  // 載入第一區塊卡片
-  loadblock01Cards() {
-    console.log('📥 Loading block 01 cards...');
-    this.loading.set(true);
-    this.error.set(null);
+  // ── Slider ────────────────────────────────────────────────
+  startSlider() { this.sliderTimer = setInterval(() => this.nextSlide(), 5000); }
+  stopSlider()  { clearInterval(this.sliderTimer); }
 
-    this.dataService.getCardsByCategory(this.FIXED_CATEGORY_JAPAN).subscribe({
-      next: (data) => {
-        console.log('✅ Japan cards loaded successfully:', data);
-        this.cards.set(data.slice(0, this.MAX_CARDS_PER_BLOCK));
-        this.loading.set(false);
+  goToSlide(i: number) { this.currentSlide = i; this.stopSlider(); this.startSlider(); }
+  nextSlide()  { this.currentSlide = (this.currentSlide + 1) % this.slides.length; }
+  prevSlide()  {
+    this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
+    this.stopSlider(); this.startSlider();
+  }
+
+  // ── 搜尋 ──────────────────────────────────────────────────
+  searchTours() {
+    const cat = this.searchDest || 'all';
+    this.router.navigate(['/category', cat], {
+      queryParams: {
+        keyword:    this.searchKeyword    || null,
+        days:       this.searchDays       || null,
+        date_start: this.searchDateStart  || null,
+        date_end:   this.searchDateEnd    || null,
       },
-      error: (error) => {
-        console.error('❌ Failed to load Japan cards:', error);
-        this.error.set(error.message);
-        this.loading.set(false);
-
-        // 使用假資料作為後備
-        const mockData: Card[] = [
-          {
-            id: 1,
-            title: '東京五日遊',
-            subtitle: '日本旅遊',
-            content: 'Backend not available, showing mock data.',
-            image: 'https://ionicframework.com/docs/img/demos/card-media.png',
-            category: '日本線'
-          }
-        ];
-        console.log('🔧 Using mock data:', mockData);
-        this.cards.set(mockData);
-      }
     });
   }
 
-  // 載入第二區塊卡片
-  loadblock02Cards() {
-    console.log('📥 Loading block 02 cards...');
-    this.loading.set(true);
-    this.error.set(null);
-
-    this.dataService.getCardsByCategory(this.FIXED_CATEGORY_USA).subscribe({
-      next: (data) => {
-        console.log('✅ USA cards loaded successfully:', data);
-        this.block02cards.set(data.slice(0, this.MAX_CARDS_PER_BLOCK));
-        this.loading.set(false);
-      },
-      error: (error) => {
-        console.error('❌ Failed to load USA cards:', error);
-        this.error.set(error.message);
-        this.loading.set(false);
-
-        // 使用假資料作為後備
-        const mockData: Card[] = [
-          {
-            id: 101, // 改個不同的 ID
-            title: '紐約五日遊',
-            subtitle: '美國旅遊',
-            content: 'Backend not available, showing mock data.',
-            image: 'https://ionicframework.com/docs/img/demos/card-media.png',
-            category: '美國線'
-          }
-        ];
-        console.log('🔧 Using mock data for USA:', mockData);
-        this.block02cards.set(mockData);
-      }
-    });
+  goToTheme(tag: string) {
+    this.router.navigate(['/category', 'all'], { queryParams: { keyword: tag } });
   }
 
-  // 載入第三區塊卡片
-  loadblock03Cards() {
-    console.log('📥 Loading block 03 cards...');
-    this.loading.set(true);
-    this.error.set(null);
+  // ── Navbar ────────────────────────────────────────────────
+  toggleNav()              { this.navOpen = !this.navOpen; }
+  openDropdown(n: string)  { this.dropdownOpen = n; }
+  closeDropdown()          { this.dropdownOpen = ''; }
+  closeNav()               { this.navOpen = false; this.dropdownOpen = ''; }
 
-    this.dataService.getCardsByCategory(this.FIXED_CATEGORY_TAIWAN).subscribe({
-      next: (data) => {
-        console.log('✅ Taiwan cards loaded successfully:', data);
-        this.block03cards.set(data.slice(0, this.MAX_CARDS_PER_BLOCK));
-        this.loading.set(false);
-      },
-      error: (error) => {
-        console.error('❌ Failed to load Taiwan cards:', error);
-        this.error.set(error.message);
-        this.loading.set(false);
-
-        // 使用假資料作為後備
-        const mockData: Card[] = [
-          {
-            id: 101, // 改個不同的 ID
-            title: '台灣五日遊',
-            subtitle: '台灣旅遊',
-            content: 'Backend not available, showing mock data.',
-            image: 'https://ionicframework.com/docs/img/demos/card-media.png',
-            category: '台灣線'
-          }
-        ];
-        console.log('🔧 Using mock data for Taiwan:', mockData);
-        this.block03cards.set(mockData);
-      }
-    });
+  // ── Tool Modal ────────────────────────────────────────────
+  openModal(tool: { title: string }) {
+    this.modalTitle   = tool.title;
+    this.modalContent = tool.title;
+    this.modalOpen    = true;
+    document.body.style.overflow = 'hidden';
   }
 
-  // 載入第四區塊卡片
-  loadblock04Cards() {
-    console.log('📥 Loading block 04 cards...');
-    this.loading.set(true);
-    this.error.set(null);
-
-    this.dataService.getCardsByCategory(this.FIXED_CATEGORY_CHINA).subscribe({
-      next: (data) => {
-        console.log('✅ China cards loaded successfully:', data);
-        this.block04cards.set(data.slice(0, this.MAX_CARDS_PER_BLOCK));
-        this.loading.set(false);
-      },
-      error: (error) => {
-        console.error('❌ Failed to load China cards:', error);
-        this.error.set(error.message);
-        this.loading.set(false);
-
-        // 使用假資料作為後備
-        const mockData: Card[] = [
-          {
-            id: 101, // 改個不同的 ID
-            title: 'China五日遊',
-            subtitle: '中國旅遊',
-            content: 'Backend not available, showing mock data.',
-            image: 'https://ionicframework.com/docs/img/demos/card-media.png',
-            category: '中國線'
-          }
-        ];
-        console.log('🔧 Using mock data for China:', mockData);
-        this.block04cards.set(mockData);
-      }
-    });
+  closeModal() {
+    this.modalOpen = false;
+    document.body.style.overflow = '';
   }
 
-  loadCategories() {
-    console.log('📥 Loading categories...');
-    this.dataService.getCategories().subscribe({
-      next: (data) => {
-        console.log('✅ Categories loaded:', data);
-        //this.categories.set(['全部', ...data]);
-      },
-      error: (error) => {
-        console.error('❌ Failed to load categories:', error);
-        // 使用預設分類
-        //this.categories.set(['全部', '中國線', '日本線', '美國線']);
-      }
-    });
+  // ── 日期格式 ──────────────────────────────────────────────
+  formatDate(s: string): string {
+    const d = new Date(s);
+    return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
   }
-
-  loadCards() {
-    console.log('📥 Loading cards...');
-    this.loading.set(true);
-    this.error.set(null);
-
-    this.dataService.getCards().subscribe({
-      next: (data) => {
-        console.log('✅ Cards loaded successfully:', data);
-        this.cards.set(data);
-        this.loading.set(false);
-      },
-      error: (error) => {
-        console.error('❌ Failed to load cards:', error);
-        this.error.set(error.message);
-        this.loading.set(false);
-
-        // 使用假資料作為後備
-        const mockData: Card[] = [
-          {
-            id: 1,
-            title: 'Mock Card 1',
-            subtitle: 'This is mock data',
-            category: '日本',
-            content: 'Backend not available, showing mock data.',
-            image: 'https://ionicframework.com/docs/img/demos/card-media.png'
-          },
-          {
-            id: 2,
-            title: 'Mock Card 1',
-            subtitle: 'This is mock data',
-            category: '日本',
-            content: 'Backend not available, showing mock data.',
-            image: 'https://ionicframework.com/docs/img/demos/card-media.png'
-          },
-          {
-            id: 2,
-            title: 'Mock Card 1',
-            subtitle: 'This is mock data',
-            category: '台灣',
-            content: 'Backend not available, showing mock data.',
-            image: 'https://ionicframework.com/docs/img/demos/card-media.png'
-          }
-        ];
-        console.log('🔧 Using mock data:', mockData);
-        this.cards.set(mockData);
-      }
-    });
-  }
-
-  loadCardsByCategory(category: string) {
-    console.log('📥 Loading cards by category:', category);
-    //this.selectedCategory.set(category);
-    this.loading.set(true);
-    this.error.set(null);
-
-    if (category === '全部') {
-      this.loadCards();
-      return;
-    }
-
-    this.dataService.getCardsByCategory(category).subscribe({
-      next: (data) => {
-        console.log(`✅ Cards loaded for category "${category}":`, data);
-        this.cards.set(data);
-        this.loading.set(false);
-      },
-      error: (error) => {
-        console.error(`❌ Failed to load cards for category "${category}":`, error);
-        this.error.set(error.message);
-        this.loading.set(false);
-        this.cards.set([]);
-      }
-    });
-  }
-
-  reloadCards() {
-    console.log('🔄 Manually reloading cards...');
-    this.loadblock01Cards();
-    this.loadblock02Cards();
-    this.loadblock03Cards();
-    this.loadblock04Cards();
-  }
-
 }

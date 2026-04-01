@@ -1,244 +1,489 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title>Home</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="reloadCards()">
-        <ion-icon name="refresh"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+<!-- ── Navbar ─────────────────────────────────────────────── -->
+<nav class="navbar" (click)="$event.stopPropagation()">
+  <div class="navbar-inner">
 
-  <button matButton [matMenuTriggerFor]="aboveMenu">Above</button>
+    <!-- Logo -->
+    <a class="nav-logo" routerLink="/" (click)="closeNav()">
+      <span class="logo-main">JourneyGo</span>
+      <span class="logo-sub">旅程趣</span>
+    </a>
 
-  <mat-menu #aboveMenu="matMenu" yPosition="above">
-    <button mat-menu-item>Item 1</button>
-    <button mat-menu-item>Item 2</button>
-  </mat-menu>
+    <!-- Desktop Menu -->
+    <ul class="nav-links" [class.open]="navOpen">
+      <li><a routerLink="/" (click)="closeNav()">首頁</a></li>
 
-  <button matButton [matMenuTriggerFor]="belowMenu">Below</button>
-  <mat-menu #belowMenu="matMenu" yPosition="below">
-    <button mat-menu-item>Item 1</button>
-    <button mat-menu-item>Item 2</button>
-  </mat-menu>
+      <li class="has-dropdown" (mouseenter)="openDropdown('group')" (mouseleave)="closeDropdown()">
+        <a>國外團體 <span class="arrow">▾</span></a>
+        <ul class="dropdown" [class.show]="dropdownOpen==='group'">
+          <li><a routerLink="/category/日本" (click)="closeNav()">日本</a></li>
+          <li><a routerLink="/category/歐洲" (click)="closeNav()">歐洲</a></li>
+          <li><a routerLink="/category/美國" (click)="closeNav()">美國</a></li>
+          <li><a routerLink="/category/韓國" (click)="closeNav()">韓國</a></li>
+          <li><a routerLink="/category/馬來西亞" (click)="closeNav()">馬來西亞</a></li>
+          <li><a routerLink="/category/沙巴" (click)="closeNav()">沙巴</a></li>
+          <li><a routerLink="/category/汶萊" (click)="closeNav()">汶萊</a></li>
+          <li><a routerLink="/category/東南亞" (click)="closeNav()">東南亞</a></li>
+          <li><a routerLink="/category/中東" (click)="closeNav()">中東</a></li>
+        </ul>
+      </li>
 
-  <button matButton [matMenuTriggerFor]="beforeMenu">Before</button>
-  <mat-menu #beforeMenu="matMenu" xPosition="before">
-    <button mat-menu-item>Item 1</button>
-    <button mat-menu-item>Item 2</button>
-  </mat-menu>
+      <li class="has-dropdown" (mouseenter)="openDropdown('theme')" (mouseleave)="closeDropdown()">
+        <a>主題旅遊 <span class="arrow">▾</span></a>
+        <ul class="dropdown" [class.show]="dropdownOpen==='theme'">
+          <li><a (click)="goToTheme('極光'); closeNav()">極光之旅</a></li>
+          <li><a (click)="goToTheme('蜜月'); closeNav()">蜜月旅行</a></li>
+          <li><a (click)="goToTheme('親子'); closeNav()">親子行程</a></li>
+          <li><a (click)="goToTheme('海島'); closeNav()">海島度假</a></li>
+          <li><a (click)="goToTheme('溫泉'); closeNav()">溫泉之旅</a></li>
+        </ul>
+      </li>
 
+      <li><a routerLink="/category/all" (click)="closeNav()">最新行程</a></li>
+      <li><a (click)="closeNav()">客製包團</a></li>
+      <li><a (click)="closeNav()">訂單查詢</a></li>
+    </ul>
 
-  <button matButton [matMenuTriggerFor]="afterMenu">After</button>
-  <mat-menu #afterMenu="matMenu" xPosition="after">
-    <button mat-menu-item>Item 1</button>
-    <button mat-menu-item>Item 2</button>
-  </mat-menu>
+    <!-- Hamburger -->
+    <button class="hamburger" (click)="toggleNav()" [class.open]="navOpen" aria-label="選單">
+      <span></span><span></span><span></span>
+    </button>
 
-</ion-header>
+  </div>
+</nav>
 
-<ion-content class="ion-padding">
+<!-- 點選外部關閉選單 -->
+@if (navOpen) {
+  <div class="nav-backdrop" (click)="closeNav()"></div>
+}
 
-  <!--  -->
-  <ion-breadcrumbs>
-    <ion-breadcrumb href="#home">Home</ion-breadcrumb>
-    <ion-breadcrumb href="#electronics">Electronics</ion-breadcrumb>
-    <ion-breadcrumb href="#cameras">Cameras</ion-breadcrumb>
-    <ion-breadcrumb href="#film">Film</ion-breadcrumb>
-  </ion-breadcrumbs>
+<!-- ── Main ───────────────────────────────────────────────── -->
+<main class="site-main">
 
-  <!-- 測試資訊顯示 -->
-  <ion-card color="primary">
-    <ion-card-header>
-      <ion-card-title>API 連線狀態</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      @if (loading()) {
-      <ion-spinner></ion-spinner>
-      <p>載入中...</p>
+  <!-- ── Hero Slider ──────────────────────────────────────── -->
+  <section class="hero">
+    @for (slide of slides; track $index) {
+      <div
+        class="hero-slide"
+        [class.active]="currentSlide === $index"
+        [style.background-image]="slideBg(slide.img)"
+      >
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <span class="hero-tag">{{ slide.tag }}</span>
+          <h1>{{ slide.title }}</h1>
+          <p>{{ slide.subtitle }}</p>
+          <button class="hero-btn" (click)="goToTheme(slide.tag)">{{ slide.btn }}</button>
+        </div>
+      </div>
+    }
+
+    <!-- 左右箭頭 -->
+    <button class="hero-arrow left" (click)="prevSlide()">&#8249;</button>
+    <button class="hero-arrow right" (click)="nextSlide()">&#8250;</button>
+
+    <!-- 導覽點 -->
+    <div class="hero-dots">
+      @for (slide of slides; track $index) {
+        <button
+          class="hero-dot"
+          [class.active]="currentSlide === $index"
+          (click)="goToSlide($index)"
+        ></button>
       }
-      @if (error()) {
-      <ion-text color="danger">
-        <p>❌ 錯誤: {{ error() }}</p>
-      </ion-text>
+    </div>
+  </section>
+
+  <!-- ── 搜尋列 ───────────────────────────────────────────── -->
+  <section class="search-bar-section">
+    <div class="search-card">
+      <div class="search-fields">
+
+        <!-- 目的地 -->
+        <div class="search-field">
+          <label class="search-label">目的地</label>
+          <select class="search-input" [(ngModel)]="searchDest">
+            <option value="">所有地區</option>
+            @for (d of destinations; track d) {
+              <option [value]="d">{{ d }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="search-divider"></div>
+
+        <!-- 出發日期 -->
+        <div class="search-field">
+          <label class="search-label">出發日期</label>
+          <input type="date" class="search-input" [(ngModel)]="searchDateStart" placeholder="開始日期" />
+        </div>
+
+        <div class="search-divider"></div>
+
+        <!-- 結束日期 -->
+        <div class="search-field">
+          <label class="search-label">結束日期</label>
+          <input type="date" class="search-input" [(ngModel)]="searchDateEnd" placeholder="結束日期" />
+        </div>
+
+        <div class="search-divider"></div>
+
+        <!-- 行程天數 -->
+        <div class="search-field">
+          <label class="search-label">行程天數</label>
+          <select class="search-input" [(ngModel)]="searchDays">
+            @for (opt of daysOptions; track opt.v) {
+              <option [value]="opt.v">{{ opt.l }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="search-divider"></div>
+
+        <!-- 關鍵字 -->
+        <div class="search-field search-field-grow">
+          <label class="search-label">關鍵字</label>
+          <input type="text" class="search-input" [(ngModel)]="searchKeyword"
+                 placeholder="輸入行程名稱..." (keyup.enter)="searchTours()" />
+        </div>
+
+      </div>
+      <button class="search-btn" (click)="searchTours()">
+        <span class="search-icon">🔍</span>
+        <span>搜尋行程</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ── 精選主題 ──────────────────────────────────────────── -->
+  <section class="themes-section">
+    <div class="section-wrap">
+      <div class="themes-header">
+        <h2 class="themes-title">精選主題</h2>
+        <p class="themes-sub">依喜好探索各式旅遊風格</p>
+      </div>
+      <div class="themes-scroll">
+        @for (t of themes; track t.tag) {
+          <button class="theme-card" (click)="goToTheme(t.tag)">
+            <span class="theme-icon">{{ t.icon }}</span>
+            <span class="theme-label">{{ t.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 熱門行程推薦 ──────────────────────────────────────── -->
+  @if (featuredCards().length) {
+    <section class="tours-section">
+      <div class="section-wrap">
+        <div class="section-header">
+          <div class="section-title-group">
+            <span class="section-label">HOT</span>
+            <h2 class="section-title">熱門行程推薦</h2>
+          </div>
+          <a class="section-more" routerLink="/category/all">查看更多 →</a>
+        </div>
+        <div class="cards-grid">
+          @for (card of featuredCards(); track card.id) {
+            <ng-container *ngTemplateOutlet="tourCard; context: { card: card }"></ng-container>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ── 旅遊小幫手 ────────────────────────────────────────── -->
+  <section class="tools-section">
+    <div class="section-wrap">
+      <div class="tools-header">
+        <h2 class="tools-title">旅遊小幫手</h2>
+        <p class="tools-sub">出發前的最佳準備工具</p>
+      </div>
+      <div class="tools-grid">
+        @for (tool of tools; track tool.title) {
+          <button class="tool-card" [style.background]="tool.color" (click)="openModal(tool)">
+            <span class="tool-icon">{{ tool.icon }}</span>
+            <div class="tool-info">
+              <div class="tool-title">{{ tool.title }}</div>
+              <div class="tool-sub">{{ tool.subtitle }}</div>
+            </div>
+            <span class="tool-arrow">›</span>
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 日本行程 ─────────────────────────────────────────── -->
+  @if (japanCards().length) {
+    <section class="tours-section section-alt">
+      <div class="section-wrap">
+        <div class="section-header">
+          <div class="section-title-group">
+            <span class="section-label">JAPAN</span>
+            <h2 class="section-title">日本行程</h2>
+          </div>
+          <a class="section-more" routerLink="/category/日本">查看更多 →</a>
+        </div>
+        <div class="cards-grid">
+          @for (card of japanCards(); track card.id) {
+            <ng-container *ngTemplateOutlet="tourCard; context: { card: card }"></ng-container>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ── 美國行程 ─────────────────────────────────────────── -->
+  @if (usaCards().length) {
+    <section class="tours-section">
+      <div class="section-wrap">
+        <div class="section-header">
+          <div class="section-title-group">
+            <span class="section-label">USA</span>
+            <h2 class="section-title">美國行程</h2>
+          </div>
+          <a class="section-more" routerLink="/category/美國">查看更多 →</a>
+        </div>
+        <div class="cards-grid">
+          @for (card of usaCards(); track card.id) {
+            <ng-container *ngTemplateOutlet="tourCard; context: { card: card }"></ng-container>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ── 台灣行程 ─────────────────────────────────────────── -->
+  @if (taiwanCards().length) {
+    <section class="tours-section section-alt">
+      <div class="section-wrap">
+        <div class="section-header">
+          <div class="section-title-group">
+            <span class="section-label">TAIWAN</span>
+            <h2 class="section-title">台灣行程</h2>
+          </div>
+          <a class="section-more" routerLink="/category/台灣">查看更多 →</a>
+        </div>
+        <div class="cards-grid">
+          @for (card of taiwanCards(); track card.id) {
+            <ng-container *ngTemplateOutlet="tourCard; context: { card: card }"></ng-container>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ── 馬來西亞行程 ──────────────────────────────────────── -->
+  @if (malaysiaCards().length) {
+    <section class="tours-section">
+      <div class="section-wrap">
+        <div class="section-header">
+          <div class="section-title-group">
+            <span class="section-label">MALAYSIA</span>
+            <h2 class="section-title">馬來西亞行程</h2>
+          </div>
+          <a class="section-more" routerLink="/category/馬來西亞">查看更多 →</a>
+        </div>
+        <div class="cards-grid">
+          @for (card of malaysiaCards(); track card.id) {
+            <ng-container *ngTemplateOutlet="tourCard; context: { card: card }"></ng-container>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ── 沙巴行程 ──────────────────────────────────────────── -->
+  @if (sabahCards().length) {
+    <section class="tours-section">
+      <div class="section-wrap">
+        <div class="section-header">
+          <div class="section-title-group">
+            <span class="section-label">SABAH</span>
+            <h2 class="section-title">沙巴行程</h2>
+          </div>
+          <a class="section-more" routerLink="/category/沙巴">查看更多 →</a>
+        </div>
+        <div class="cards-grid">
+          @for (card of sabahCards(); track card.id) {
+            <ng-container *ngTemplateOutlet="tourCard; context: { card: card }"></ng-container>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ── 汶萊行程 ──────────────────────────────────────────── -->
+  @if (bruneiCards().length) {
+    <section class="tours-section section-alt">
+      <div class="section-wrap">
+        <div class="section-header">
+          <div class="section-title-group">
+            <span class="section-label">BRUNEI</span>
+            <h2 class="section-title">汶萊行程</h2>
+          </div>
+          <a class="section-more" routerLink="/category/汶萊">查看更多 →</a>
+        </div>
+        <div class="cards-grid">
+          @for (card of bruneiCards(); track card.id) {
+            <ng-container *ngTemplateOutlet="tourCard; context: { card: card }"></ng-container>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ── Footer ────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+
+      <!-- 品牌 -->
+      <div class="footer-col">
+        <div class="footer-logo">JourneyGo 旅程趣</div>
+        <p class="footer-tagline">致力於提供最優質的旅遊體驗，讓每一趟旅程都成為難忘的回憶。</p>
+        <div class="footer-socials">
+          <a href="#" aria-label="Facebook">FB</a>
+          <a href="#" aria-label="Instagram">IG</a>
+          <a href="#" aria-label="LINE">LINE</a>
+        </div>
+      </div>
+
+      <!-- 快速連結 -->
+      <div class="footer-col">
+        <h4 class="footer-heading">快速連結</h4>
+        <ul class="footer-links">
+          <li><a href="#">關於我們</a></li>
+          <li><a href="#">常見問題</a></li>
+          <li><a href="#">契約範本</a></li>
+          <li><a href="#">隱私權政策</a></li>
+          <li><a href="#">聯絡我們</a></li>
+        </ul>
+      </div>
+
+      <!-- 熱門目的地 -->
+      <div class="footer-col">
+        <h4 class="footer-heading">熱門目的地</h4>
+        <ul class="footer-links">
+          <li><a routerLink="/category/日本">日本</a></li>
+          <li><a routerLink="/category/歐洲">歐洲</a></li>
+          <li><a routerLink="/category/美國">美國</a></li>
+          <li><a routerLink="/category/韓國">韓國</a></li>
+          <li><a routerLink="/category/馬來西亞">馬來西亞</a></li>
+          <li><a routerLink="/category/沙巴">沙巴</a></li>
+          <li><a routerLink="/category/汶萊">汶萊</a></li>
+          <li><a routerLink="/category/東南亞">東南亞</a></li>
+        </ul>
+      </div>
+
+      <!-- 公司資訊 -->
+      <div class="footer-col">
+        <h4 class="footer-heading">公司資訊</h4>
+        <ul class="footer-info">
+          <li>JourneyGo 旅程趣旅行社</li>
+          <li>客服電話：02-1234-5678</li>
+          <li>傳真：02-1234-5679</li>
+          <li>每人旅遊責任險 250 萬元</li>
+          <li>履約保證險 9200 萬元</li>
+        </ul>
+      </div>
+
+    </div>
+    <div class="footer-bottom">
+      © 2025 JourneyGo 旅程趣旅行社 ‧ 版權所有
+    </div>
+  </footer>
+
+</main>
+
+<!-- ── 旅遊小幫手 Modal ──────────────────────────────────── -->
+@if (modalOpen) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ modalTitle }}</h3>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        @if (modalTitle === '天氣查詢') {
+          <p>輸入目的地城市名稱，即可查看即時天氣與未來 7 天預報。</p>
+          <input type="text" class="modal-input" placeholder="例：東京、首爾、巴黎..." />
+          <button class="modal-action-btn">查詢天氣</button>
+        }
+        @if (modalTitle === '匯率換算') {
+          <p>查詢最新即時匯率，快速換算旅遊預算。</p>
+          <div class="modal-row">
+            <input type="number" class="modal-input" placeholder="金額" />
+            <select class="modal-input">
+              <option>TWD → JPY</option>
+              <option>TWD → USD</option>
+              <option>TWD → EUR</option>
+              <option>TWD → KRW</option>
+            </select>
+          </div>
+          <button class="modal-action-btn">換算</button>
+        }
+        @if (modalTitle === '旅遊插頭查詢') {
+          <p>出發前確認目的地電壓與插座規格，避免旅途中的困擾。</p>
+          <select class="modal-input">
+            <option>日本 (100V / A型)</option>
+            <option>美國 (120V / A/B型)</option>
+            <option>歐洲 (230V / C型)</option>
+            <option>韓國 (220V / C/F型)</option>
+            <option>泰國 (220V / A/B/C型)</option>
+            <option>馬來西亞 (240V / G型)</option>
+            <option>沙巴 (240V / G型)</option>
+            <option>汶萊 (240V / G型)</option>
+          </select>
+          <button class="modal-action-btn">查看詳情</button>
+        }
+        @if (modalTitle === '客製包團') {
+          <p>提供企業員工旅遊、家族包團、蜜月旅行等客製化服務，請填寫需求讓我們為您規劃。</p>
+          <input type="text" class="modal-input" placeholder="聯絡人姓名" />
+          <input type="text" class="modal-input" placeholder="聯絡電話" />
+          <textarea class="modal-input" rows="3" placeholder="旅遊需求說明..."></textarea>
+          <button class="modal-action-btn">送出需求</button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── 卡片共用模板 ───────────────────────────────────────── -->
+<ng-template #tourCard let-card="card">
+  <a class="tour-card" [routerLink]="['/detail', card.id]">
+    <div class="card-img-wrap">
+      <img [src]="card.image" [alt]="card.title" class="card-img" loading="lazy" />
+      <span class="card-dest-badge">{{ card.category }}</span>
+    </div>
+    <div class="card-body">
+      @if (card.tags?.length) {
+        <div class="card-tags">
+          @for (tag of card.tags.slice(0, 3); track tag) {
+            <span class="tag">{{ tag }}</span>
+          }
+        </div>
       }
-      @if (!loading() && !error()) {
-      <ion-text color="success">
-        <p>✅ 已載入 {{ cards().length }} 筆資料</p>
-      </ion-text>
+      <h3 class="card-title">{{ card.title }}</h3>
+      @if (card.next_dates?.length) {
+        <div class="card-dates">
+          @for (d of card.next_dates; track d.departure_date) {
+            <span class="date-chip" [class]="'chip-' + d.status">
+              {{ formatDate(d.departure_date) }}
+              @if (d.status === 'full')        { <em>(滿)</em> }
+              @if (d.status === 'almost_full') { <em>(即)</em> }
+            </span>
+          }
+        </div>
       }
-      <ion-button (click)="testConnection()" size="small">測試連線</ion-button>
-      <ion-button (click)="reloadCards()" size="small">重新載入</ion-button>
-    </ion-card-content>
-  </ion-card>
-
-  <!-- 第一區塊 -->
-  <ion-card-title class="section-title">
-    <ion-text color="primary">
-      <h2>日本線行程</h2>
-    </ion-text>
-  </ion-card-title>
-
-  <!-- 第一區塊卡片顯示 -->
-  <ion-grid [fixed]="true">
-    <ion-row class="card-row">
-      @for (card of cards(); track card.id) {
-      <ion-col size="12" size-md="6" size-lg="4">
-        <ion-card>
-          <img [alt]="card.title" [src]="card.image" />
-          <ion-card-header>
-            <ion-card-title>{{ card.title }}</ion-card-title>
-            <ion-card-subtitle>{{ card.subtitle }}</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            {{ card.content }}
-            <br><small>ID: {{ card.id }}</small>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      }
-      @empty {
-      <ion-col>
-        <ion-card>
-          <ion-card-content>
-            <p>目前沒有日本線行程資料</p>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      }
-    </ion-row>
-  </ion-grid>
-
-  <!-- 第二區塊 -->
-  <ion-card-title class="section-title">
-    <ion-text color="secondary">
-      <h2>美國線行程</h2>
-    </ion-text>
-  </ion-card-title>
-
-  <!-- 第二區塊卡片顯示 -->
-  <ion-grid [fixed]="true">
-    <ion-row class="card-row">
-      @for (block02card of block02cards(); track block02card.id) {
-      <ion-col size="12" size-md="6" size-lg="4">
-        <ion-card>
-          <img [alt]="block02card.title" [src]="block02card.image" />
-          <ion-card-header>
-            <ion-card-title>{{ block02card.title }}</ion-card-title>
-            <ion-card-subtitle>{{ block02card.subtitle }}</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            {{ block02card.content }}
-            <br><small>分類: 美國 | ID: {{ block02card.id }}</small>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      }
-      @empty {
-      <ion-col>
-        <ion-card>
-          <ion-card-content>
-            <p>目前沒有美國線行程資料</p>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      }
-    </ion-row>
-  </ion-grid>
-
-  <!-- 第三區塊 -->
-  <ion-card-title class="section-title">
-    <ion-text color="secondary">
-      <h2>台灣線行程</h2>
-    </ion-text>
-  </ion-card-title>
-
-  <!-- 第三區塊卡片顯示 -->
-  <ion-grid [fixed]="true">
-    <ion-row class="card-row">
-      @for (block03card of block03cards(); track block03card.id) {
-      <ion-col size="12" size-md="6" size-lg="4">
-        <ion-card>
-          <img [alt]="block03card.title" [src]="block03card.image" />
-          <ion-card-header>
-            <ion-card-title>{{ block03card.title }}</ion-card-title>
-            <ion-card-subtitle>{{ block03card.subtitle }}</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            {{ block03card.content }}
-            <br><small>分類: 台灣 | ID: {{ block03card.id }}</small>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      }
-      @empty {
-      <ion-col>
-        <ion-card>
-          <ion-card-content>
-            <p>目前沒有台灣線行程資料</p>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      }
-    </ion-row>
-  </ion-grid>
-
-  <!-- 第四區塊 -->
-  <ion-card-title class="section-title">
-    <ion-text color="secondary">
-      <h2>中國線行程</h2>
-    </ion-text>
-  </ion-card-title>
-
-  <!-- 第四區塊卡片顯示 -->
-  <ion-grid [fixed]="true">
-    <ion-row class="card-row">
-      @for (block04card of block04cards(); track block04card.id) {
-      <ion-col size="12" size-md="6" size-lg="4">
-        <ion-card>
-          <img [alt]="block04card.title" [src]="block04card.image" />
-          <ion-card-header>
-            <ion-card-title>{{ block04card.title }}</ion-card-title>
-            <ion-card-subtitle>{{ block04card.subtitle }}</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            {{ block04card.content }}
-            <br><small>分類: 中國 | ID: {{ block04card.id }}</small>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      }
-      @empty {
-      <ion-col>
-        <ion-card>
-          <ion-card-content>
-            <p>目前沒有中國線行程資料</p>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      }
-    </ion-row>
-  </ion-grid>
-
-
-</ion-content>
-
-<ion-footer>
-  <ion-toolbar>
-    <ion-grid>
-      <ion-row>
-        <ion-col size="4">
-          <ion-text>© 2025 AngularJourneysGo</ion-text>
-        </ion-col>
-        <ion-col size="4" class="ion-text-center">
-          <ion-text>關於我們 | 聯絡方式</ion-text>
-        </ion-col>
-        <ion-col size="4" class="ion-text-end">
-          <ion-text>隱私權政策</ion-text>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </ion-toolbar>
-</ion-footer>
+      <div class="card-footer">
+        @if (card.duration) {
+          <span class="card-duration">{{ card.duration }}</span>
+        }
+        @if (card.min_price) {
+          <span class="card-price">NT$ {{ card.min_price | number }} 起</span>
+        }
+      </div>
+    </div>
+  </a>
+</ng-template>
